@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Modern Bookshelf</title>
+<title>Fourlinkx Bookshelf</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
@@ -188,7 +188,9 @@
   }
 
   input[type="text"],
-  input[type="file"] {
+  input[type="file"],
+  input[type="password"],
+  input[type="tel"] {
     width: 100%;
     padding: 10px 12px;
     margin-bottom: 16px;
@@ -198,7 +200,9 @@
     transition: border-color 0.3s ease;
   }
   input[type="text"]:focus,
-  input[type="file"]:focus {
+  input[type="file"]:focus,
+  input[type="password"]:focus,
+  input[type="tel"]:focus {
     outline: none;
     border-color: var(--secondary-color);
   }
@@ -248,6 +252,14 @@
     user-select: text;
   }
 
+  #cardPaymentOptions {
+    margin-bottom: 16px;
+  }
+  #cardPaymentOptions label {
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+
   /* Responsive */
   @media (max-width: 500px) {
     header h1 {
@@ -262,7 +274,7 @@
 </head>
 <body>
 <header>
-  <h1>Bookshelf</h1>
+  <h1>Fourlinkx Bookshelf</h1>
   <button id="uploadBtn">Upload Book</button>
 </header>
 
@@ -308,14 +320,29 @@
           <input type="radio" id="payCard" name="paymentMethod" value="card" required />
           <label for="payCard">Card Payment</label>
         </div>
+        <div class="payment-method-option" style="margin-left: 20px; color: #555;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa Logo" width="40" height="20" style="vertical-align:middle; margin-right:8px;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/5a/Verve_Logo.png" alt="Verve Card Logo" width="40" height="20" style="vertical-align:middle; margin-right:8px;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/0/04/Mastercard-logo.png" alt="MasterCard Logo" width="40" height="20" style="vertical-align:middle;">
+        </div>
         <div class="payment-method-option">
           <input type="radio" id="payBank" name="paymentMethod" value="bank" />
           <label for="payBank">Bank Transfer</label>
         </div>
       </fieldset>
       <div id="uploadPaymentBankDetails" style="display:none;">
-        <p><strong>Bank Account Number:</strong> 1234-5678-9012</p>
+        <p><strong>Bank Account Number:</strong> 4091786172</p>
+        <p><strong>Bank Name:</strong> Polaris Bank</p>
+        <p><strong>Bank Account Name:</strong> Fourlinkx Information Technology Services</p>
         <p>Please transfer the payment and then click "Confirm Payment".</p>
+      </div>
+      <div id="cardPaymentOptions" style="display:none;">
+        <label for="cardNumber">Card Number</label>
+        <input type="tel" id="cardNumber" name="cardNumber" placeholder="Enter your card number" pattern="\d{13,19}" maxlength="19" required autocomplete="cc-number" />
+        <label for="cardExpiry">Expiry Date (MM/YY)</label>
+        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" pattern="^(0[1-9]|1[0-2])\/?([0-9]{2})$" maxlength="5" required autocomplete="cc-exp" />
+        <label for="cardCVV">CVV</label>
+        <input type="password" id="cardCVV" name="cardCVV" placeholder="CVV" pattern="\d{3,4}" maxlength="4" required autocomplete="cc-csc" />
       </div>
       <button type="submit" id="confirmUploadPaymentBtn" disabled>Confirm Payment</button>
     </form>
@@ -328,9 +355,8 @@
     <span class="close-btn" id="paymentClose" tabindex="0" role="button" aria-label="Close Payment Modal">&times;</span>
     <h3 id="paymentModalTitle">Complete Payment</h3>
     <div id="paymentInfo">
-      Please pay 1.00 USD to download "<span id="paymentBookTitle"></span>".
+      Please pay 300 NGN to download "<span id="paymentBookTitle"></span>".
     </div>
-    <!-- Placeholder for Opay payment widget or simulation -->
     <button id="payNowBtn">Pay with Opay</button>
   </div>
 </div>
@@ -353,6 +379,7 @@
     const payCardRadio = document.getElementById('payCard');
     const payBankRadio = document.getElementById('payBank');
     const uploadPaymentBankDetails = document.getElementById('uploadPaymentBankDetails');
+    const cardPaymentOptions = document.getElementById('cardPaymentOptions');
     const confirmUploadPaymentBtn = document.getElementById('confirmUploadPaymentBtn');
 
     const paymentModal = document.getElementById('paymentModal');
@@ -362,8 +389,6 @@
 
     let books = [];
     let currentDownloadBook = null;
-
-    // Store data of the book waiting to upload after payment
     let pendingUpload = null;
 
     // Hardcoded coming soon books
@@ -460,6 +485,8 @@
       uploadSubmitBtn.disabled = true;
       uploadForm.reset();
       uploadSubmitBtn.setAttribute('aria-disabled','true');
+      cardPaymentOptions.style.display = 'none';
+      uploadPaymentBankDetails.style.display = 'none';
       bookTitleInput.focus();
     }
 
@@ -482,6 +509,7 @@
       payCardRadio.checked = false;
       payBankRadio.checked = false;
       uploadPaymentBankDetails.style.display = 'none';
+      cardPaymentOptions.style.display = 'none';
       confirmUploadPaymentBtn.focus();
     }
 
@@ -494,6 +522,7 @@
       payCardRadio.checked = false;
       payBankRadio.checked = false;
       uploadPaymentBankDetails.style.display = 'none';
+      cardPaymentOptions.style.display = 'none';
     }
 
     // Open payment modal for a specific book download
@@ -558,14 +587,31 @@
       if(e.target.name === 'paymentMethod') {
         if(e.target.value === 'bank') {
           uploadPaymentBankDetails.style.display = 'block';
+          cardPaymentOptions.style.display = 'none';
+          // Disable card inputs when bank is selected
+          setCardInputsRequired(false);
         } else {
           uploadPaymentBankDetails.style.display = 'none';
+          cardPaymentOptions.style.display = 'block';
+          // Enable card inputs when card is selected
+          setCardInputsRequired(true);
         }
         // Enable confirm payment button when a method is selected
         confirmUploadPaymentBtn.disabled = false;
         confirmUploadPaymentBtn.removeAttribute('aria-disabled');
       }
     });
+
+    function setCardInputsRequired(required) {
+      const cardInputs = cardPaymentOptions.querySelectorAll('input');
+      cardInputs.forEach(input => {
+        if(required) {
+          input.setAttribute('required', 'required');
+        } else {
+          input.removeAttribute('required');
+        }
+      });
+    }
 
     // Handle confirm payment button for upload payment modal
     uploadPaymentForm.addEventListener('submit', e => {
@@ -581,15 +627,39 @@
         return;
       }
 
+      // If card payment is selected, perform simple validation of card inputs
+      if(selectedMethod === 'card') {
+        const cardNumber = uploadPaymentForm.cardNumber.value.trim();
+        const cardExpiry = uploadPaymentForm.cardExpiry.value.trim();
+        const cardCVV = uploadPaymentForm.cardCVV.value.trim();
+
+        if(!/^\d{13,19}$/.test(cardNumber)) {
+          alert('Please enter a valid card number (13 to 19 digits).');
+          return;
+        }
+        if(!/^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(cardExpiry)) {
+          alert('Please enter a valid expiry date in MM/YY format.');
+          return;
+        }
+        if(!/^\d{3,4}$/.test(cardCVV)) {
+          alert('Please enter a valid CVV (3 or 4 digits).');
+          return;
+        }
+      }
+
       confirmUploadPaymentBtn.disabled = true;
       confirmUploadPaymentBtn.textContent = 'Processing Payment...';
 
-      // Here you would integrate Opay payment gateway for real payment
-      // We simulate payment completion with timeout
+      // Simulate payment processing
       setTimeout(() => {
-        confirmUploadPaymentBtn.disabled = false;
-        confirmUploadPaymentBtn.textContent = 'Confirm Payment';
-        alert(`Payment via ${selectedMethod === 'card' ? 'Card' : 'Bank Transfer'} successful! Uploading book now.`);
+        if (selectedMethod === 'card') {
+          // Here you would integrate Opay payment gateway for real card payment
+          // Use Opay API to process the card payment
+          // For now, we simulate a successful payment
+          alert('Card payment successful! Uploading book now.');
+        } else {
+          alert('Bank transfer payment successful! Uploading book now.');
+        }
 
         // After payment success: read file and save book
         const reader = new FileReader();
@@ -673,8 +743,8 @@
     renderComingSoonBooks();
 
     uploadBtn.addEventListener('click', openUploadModal);
-
   })();
 </script>
 </body>
 </html>
+
