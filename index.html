@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Fourlinkx Bookshelf</title>
+<title>Modern Bookshelf</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
@@ -274,7 +274,7 @@
 </head>
 <body>
 <header>
-  <h1>Fourlinkx Bookshelf</h1>
+  <h1>Bookshelf</h1>
   <button id="uploadBtn">Upload Book</button>
 </header>
 
@@ -331,9 +331,7 @@
         </div>
       </fieldset>
       <div id="uploadPaymentBankDetails" style="display:none;">
-        <p><strong>Bank Account Number:</strong> 4091786172</p>
-        <p><strong>Bank Name:</strong> Polaris Bank</p>
-        <p><strong>Bank Account Name:</strong> Fourlinkx Information Technology Services</p>
+        <p><strong>Bank Account Number:</strong> 1234-5678-9012</p>
         <p>Please transfer the payment and then click "Confirm Payment".</p>
       </div>
       <div id="cardPaymentOptions" style="display:none;">
@@ -355,7 +353,7 @@
     <span class="close-btn" id="paymentClose" tabindex="0" role="button" aria-label="Close Payment Modal">&times;</span>
     <h3 id="paymentModalTitle">Complete Payment</h3>
     <div id="paymentInfo">
-      Please pay 300 NGN to download "<span id="paymentBookTitle"></span>".
+      Please pay 1.00 USD to download "<span id="paymentBookTitle"></span>".
     </div>
     <button id="payNowBtn">Pay with Opay</button>
   </div>
@@ -554,14 +552,20 @@
       }
     }
 
-    // Handle upload form submit
+    // Book Data Validation and escrow on form submit
     uploadForm.addEventListener('submit', e => {
       e.preventDefault();
-      // Collect data
+
       const titleInputVal = bookTitleInput.value.trim();
       const fileInputVal = bookFileInput.files[0];
+
+      // Book Data Validation
       if (!titleInputVal) {
         alert('Please enter a book title.');
+        return;
+      }
+      if (titleInputVal.length < 2 || titleInputVal.length > 100) {
+        alert('Book title must be between 2 and 100 characters.');
         return;
       }
       if (!fileInputVal) {
@@ -572,8 +576,14 @@
         alert('Only PDF files are supported.');
         return;
       }
-      // Store pending upload data and open payment modal
+      if (fileInputVal.size > 20 * 1024 * 1024) {
+        alert('File size must be less than 20MB.');
+        return;
+      }
+
+      // Store data in escrow
       pendingUpload = { title: titleInputVal, file: fileInputVal };
+
       closeUploadModal();
       openUploadPaymentModal();
     });
@@ -582,21 +592,18 @@
     bookTitleInput.addEventListener('input', validateUploadForm);
     bookFileInput.addEventListener('change', validateUploadForm);
 
-    // Payment method change in upload payment modal
+    // Payment method selection handling
     uploadPaymentForm.addEventListener('change', e => {
       if(e.target.name === 'paymentMethod') {
         if(e.target.value === 'bank') {
           uploadPaymentBankDetails.style.display = 'block';
           cardPaymentOptions.style.display = 'none';
-          // Disable card inputs when bank is selected
           setCardInputsRequired(false);
         } else {
           uploadPaymentBankDetails.style.display = 'none';
           cardPaymentOptions.style.display = 'block';
-          // Enable card inputs when card is selected
           setCardInputsRequired(true);
         }
-        // Enable confirm payment button when a method is selected
         confirmUploadPaymentBtn.disabled = false;
         confirmUploadPaymentBtn.removeAttribute('aria-disabled');
       }
@@ -613,7 +620,7 @@
       });
     }
 
-    // Handle confirm payment button for upload payment modal
+    // Confirm payment and release escrow
     uploadPaymentForm.addEventListener('submit', e => {
       e.preventDefault();
       const selectedMethod = uploadPaymentForm.paymentMethod.value;
@@ -627,7 +634,6 @@
         return;
       }
 
-      // If card payment is selected, perform simple validation of card inputs
       if(selectedMethod === 'card') {
         const cardNumber = uploadPaymentForm.cardNumber.value.trim();
         const cardExpiry = uploadPaymentForm.cardExpiry.value.trim();
@@ -650,25 +656,21 @@
       confirmUploadPaymentBtn.disabled = true;
       confirmUploadPaymentBtn.textContent = 'Processing Payment...';
 
-      // Simulate payment processing
+      // Simulate payment processing and escrow release
       setTimeout(() => {
-        if (selectedMethod === 'card') {
-          // Here you would integrate Opay payment gateway for real card payment
-          // Use Opay API to process the card payment
-          // For now, we simulate a successful payment
+        if(selectedMethod === 'card') {
           alert('Card payment successful! Uploading book now.');
         } else {
           alert('Bank transfer payment successful! Uploading book now.');
         }
 
-        // After payment success: read file and save book
+        // Release escrow to main storage
         const reader = new FileReader();
         reader.onload = (event) => {
-          const fileDataUrl = event.target.result;
           books.push({
             title: pendingUpload.title,
             uploadDate: new Date().toISOString(),
-            fileData: fileDataUrl
+            fileData: event.target.result
           });
           saveBooks();
           renderBooks();
@@ -680,7 +682,7 @@
       }, 2000);
     });
 
-    // Handle download payment button click simulation
+    // Download payment simulation
     payNowBtn.addEventListener('click', () => {
       if (!currentDownloadBook) return;
 
@@ -696,7 +698,6 @@
       }, 1500);
     });
 
-    // Generate download link for a book
     function downloadBook(book) {
       const link = document.createElement('a');
       link.href = book.fileData;
@@ -706,16 +707,13 @@
       document.body.removeChild(link);
     }
 
-    // Event listeners for modal close buttons
     uploadClose.addEventListener('click', closeUploadModal);
     uploadPaymentClose.addEventListener('click', () => {
       closeUploadPaymentModal();
-      // If user closes payment modal mid-way, clear pending upload so they must restart upload
       pendingUpload = null;
     });
     paymentClose.addEventListener('click', closePaymentModal);
 
-    // Close modals when clicking outside content
     window.addEventListener('click', e => {
       if (e.target === uploadModal) closeUploadModal();
       if (e.target === uploadPaymentModal) {
@@ -725,7 +723,6 @@
       if (e.target === paymentModal) closePaymentModal();
     });
 
-    // Accessibility: Close modals with Escape key
     window.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
         if (uploadModal.style.display === 'block') closeUploadModal();
@@ -737,7 +734,6 @@
       }
     });
 
-    // Initialize
     loadBooks();
     renderBooks();
     renderComingSoonBooks();
