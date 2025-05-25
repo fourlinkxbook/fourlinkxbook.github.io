@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Modern Bookshelf</title>
+<title>Modern Bookshelf - Real-time</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
@@ -336,11 +336,11 @@
       </div>
       <div id="cardPaymentOptions" style="display:none;">
         <label for="cardNumber">Card Number</label>
-        <input type="tel" id="cardNumber" name="cardNumber" placeholder="Enter your card number" pattern="\d{13,19}" maxlength="19" required autocomplete="cc-number" />
+        <input type="tel" id="cardNumber" name="cardNumber" placeholder="Enter your card number" pattern="\\d{13,19}" maxlength="19" required autocomplete="cc-number" />
         <label for="cardExpiry">Expiry Date (MM/YY)</label>
-        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" pattern="^(0[1-9]|1[0-2])\/?([0-9]{2})$" maxlength="5" required autocomplete="cc-exp" />
+        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" pattern="^(0[1-9]|1[0-2])\\/?([0-9]{2})$" maxlength="5" required autocomplete="cc-exp" />
         <label for="cardCVV">CVV</label>
-        <input type="password" id="cardCVV" name="cardCVV" placeholder="CVV" pattern="\d{3,4}" maxlength="4" required autocomplete="cc-csc" />
+        <input type="password" id="cardCVV" name="cardCVV" placeholder="CVV" pattern="\\d{3,4}" maxlength="4" required autocomplete="cc-csc" />
       </div>
       <button type="submit" id="confirmUploadPaymentBtn" disabled>Confirm Payment</button>
     </form>
@@ -406,11 +406,24 @@
     function loadBooks() {
       const data = localStorage.getItem('bookshelf_books');
       if(data) {
-        books = JSON.parse(data);
+        try {
+          books = JSON.parse(data);
+        } catch(e) {
+          books = [];
+          console.warn('Could not parse books from localStorage:', e);
+        }
       } else {
         books = [];
       }
     }
+
+    // React to changes in localStorage in other tabs (real-time sync)
+    window.addEventListener('storage', event => {
+      if(event.key === 'bookshelf_books') {
+        loadBooks();
+        renderBooks();
+      }
+    });
 
     // Function to create book cards in the Available Books UI
     function renderBooks() {
@@ -692,7 +705,7 @@
       setTimeout(() => {
         payNowBtn.disabled = false;
         payNowBtn.textContent = 'Pay with Opay';
-        alert(`Payment successful! Downloading "${currentDownloadBook.title}" now.`);
+        alert(\`Payment successful! Downloading "\${currentDownloadBook.title}" now.\`);
         downloadBook(currentDownloadBook);
         closePaymentModal();
       }, 1500);
@@ -701,7 +714,7 @@
     function downloadBook(book) {
       const link = document.createElement('a');
       link.href = book.fileData;
-      link.download = book.title.replace(/\s+/g, '_') + '.pdf';
+      link.download = book.title.replace(/\\s+/g, '_') + '.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -734,6 +747,7 @@
       }
     });
 
+    // Initial load
     loadBooks();
     renderBooks();
     renderComingSoonBooks();
