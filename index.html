@@ -338,7 +338,7 @@
         <label for="cardNumber">Card Number</label>
         <input type="tel" id="cardNumber" name="cardNumber" placeholder="Enter your card number" pattern="\\d{13,19}" maxlength="19" required autocomplete="cc-number" />
         <label for="cardExpiry">Expiry Date (MM/YY)</label>
-        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" pattern="^(0[1-9]|1[0-2])\\/?([0-9]{2})$" maxlength="5" required autocomplete="cc-exp" />
+        <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" pattern="^(0[1-9]|1[0-2])\\/([0-9]{2})$" maxlength="5" required autocomplete="cc-exp" />
         <label for="cardCVV">CVV</label>
         <input type="password" id="cardCVV" name="cardCVV" placeholder="CVV" pattern="\\d{3,4}" maxlength="4" required autocomplete="cc-csc" />
       </div>
@@ -656,7 +656,7 @@
           alert('Please enter a valid card number (13 to 19 digits).');
           return;
         }
-        if(!/^(0[1-9]|1[0-2])\/?([0-9]{2})$/.test(cardExpiry)) {
+        if(!/^(0[1-9]|1[0-2])\\/([0-9]{2})$/.test(cardExpiry)) {
           alert('Please enter a valid expiry date in MM/YY format.');
           return;
         }
@@ -705,7 +705,7 @@
       setTimeout(() => {
         payNowBtn.disabled = false;
         payNowBtn.textContent = 'Pay with Opay';
-        alert(\`Payment successful! Downloading "\${currentDownloadBook.title}" now.\`);
+        alert(`Payment successful! Downloading "${currentDownloadBook.title}" now.`);
         downloadBook(currentDownloadBook);
         closePaymentModal();
       }, 1500);
@@ -714,7 +714,7 @@
     function downloadBook(book) {
       const link = document.createElement('a');
       link.href = book.fileData;
-      link.download = book.title.replace(/\\s+/g, '_') + '.pdf';
+      link.download = book.title.replace(/\s+/g, '_') + '.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -757,3 +757,4 @@
 </script>
 </body>
 </html>
+
