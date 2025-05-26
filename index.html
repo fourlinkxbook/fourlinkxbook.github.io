@@ -1,20 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>AI Car Racing Game</title>
+  <title>AI Car Racing Game (3D)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { margin: 0; overflow: hidden; }
+    body { margin: 0; overflow: hidden; background: #333; font-family: Arial, sans-serif; }
     #game { width: 100%; height: 100vh; }
+    #controls { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 20px; }
+    button { padding: 10px 20px; font-size: 18px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    #mobile-controls { display: none; position: absolute; bottom: 80px; width: 100%; justify-content: space-between; user-select: none; }
+    .mobile-btn { width: 80px; height: 80px; background: rgba(0,0,0,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; }
+    #instructions { position: absolute; top: 20px; width: 100%; text-align: center; color: #fff; font-size: 16px; }
+    @media (max-width: 600px) {
+      #mobile-controls { display: flex; }
+    }
   </style>
 </head>
 <body>
+  <div id="instructions">Use LEFT/RIGHT arrow keys or tap the buttons below to move your car!</div>
   <div id="game"></div>
+  <div id="mobile-controls">
+    <div class="mobile-btn" id="left-btn">←</div>
+    <div class="mobile-btn" id="right-btn">→</div>
+  </div>
+  <div id="controls">
+    <button id="start">Start</button>
+    <button id="restart">Restart</button>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
   <script>
-    let scene, camera, renderer, playerCar, aiCar;
+    let scene, camera, renderer, controls, playerCar, aiCar;
+    let gameRunning = false;
+    let playerZ = 0, aiZ = 0;
+    let score = 0;
+    const playerSpeed = 0.1;
+    const aiSpeed = 0.08;
+    let playerX = 0, aiX = 0;
 
+    // Set up scene
     function init() {
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -25,43 +51,117 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       document.getElementById('game').appendChild(renderer.domElement);
 
-      // Add lights
-      const light = new THREE.AmbientLight(0xffffff, 0.5);
-      scene.add(light);
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambientLight);
       const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
       directionalLight.position.set(0, 10, 10);
       scene.add(directionalLight);
 
-      // Load car models (replace with your own model URLs)
+      // Ground
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(100, 100),
+        new THREE.MeshStandardMaterial({ color: 0x555555, side: THREE.DoubleSide })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -0.5;
+      scene.add(ground);
+
+      // Road
+      const road = new THREE.Mesh(
+        new THREE.PlaneGeometry(10, 100),
+        new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide })
+      );
+      road.rotation.x = -Math.PI / 2;
+      road.position.y = -0.4;
+      scene.add(road);
+
+      // Load car models (replace with your own GLTF/GLB files)
       const loader = new THREE.GLTFLoader();
+      // NOTE: You must use your own car model URLs here!
+      // For demo, we use a placeholder (does not work unless you have a valid GLTF/GLB URL)
       loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ferrari.glb', function(gltf) {
         playerCar = gltf.scene;
-        playerCar.position.set(-5, 0, 0);
+        playerCar.scale.set(0.5, 0.5, 0.5);
+        playerCar.position.set(playerX, 0, playerZ);
+        playerCar.rotation.y = Math.PI;
         scene.add(playerCar);
       });
 
       loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ferrari.glb', function(gltf) {
         aiCar = gltf.scene;
-        aiCar.position.set(5, 0, 0);
+        aiCar.scale.set(0.5, 0.5, 0.5);
+        aiCar.position.set(aiX, 0, aiZ - 10);
+        aiCar.rotation.y = Math.PI;
         scene.add(aiCar);
       });
+
+      // Controls for camera (optional)
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableZoom = true;
+      controls.enablePan = false;
+
+      // Event listeners for mobile controls
+      const leftBtn = document.getElementById('left-btn');
+      const rightBtn = document.getElementById('right-btn');
+      leftBtn.addEventListener('touchstart', () => { if (gameRunning) playerX -= 1; });
+      rightBtn.addEventListener('touchstart', () => { if (gameRunning) playerX += 1; });
+
+      // Keyboard controls
+      document.addEventListener('keydown', (e) => {
+        if (!gameRunning) return;
+        if (e.key === 'ArrowLeft') playerX -= 1;
+        if (e.key === 'ArrowRight') playerX += 1;
+      });
+
+      // Start/restart buttons
+      const startBtn = document.getElementById('start');
+      const restartBtn = document.getElementById('restart');
+      startBtn.onclick = () => {
+        if (!gameRunning) {
+          gameRunning = true;
+          score = 0;
+          playerZ = 0;
+          aiZ = -10;
+          playerX = 0;
+          aiX = 0;
+          if (playerCar) playerCar.position.set(playerX, 0, playerZ);
+          if (aiCar) aiCar.position.set(aiX, 0, aiZ);
+        }
+      };
+      restartBtn.onclick = () => {
+        gameRunning = false;
+        score = 0;
+        playerZ = 0;
+        aiZ = -10;
+        playerX = 0;
+        aiX = 0;
+        if (playerCar) playerCar.position.set(playerX, 0, playerZ);
+        if (aiCar) aiCar.position.set(aiX, 0, aiZ);
+      };
 
       // Animation loop
       function animate() {
         requestAnimationFrame(animate);
-        if (playerCar) playerCar.position.x += 0.05;
-        if (aiCar) aiCar.position.x += 0.04;
+        if (gameRunning) {
+          playerZ += playerSpeed;
+          aiZ += aiSpeed;
+          if (playerCar) playerCar.position.set(playerX, 0, playerZ);
+          if (aiCar) aiCar.position.set(aiX, 0, aiZ);
+        }
         renderer.render(scene, camera);
+        controls.update();
       }
       animate();
-    }
 
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
     window.onload = init;
-    window.addEventListener('resize', function() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
   </script>
 </body>
 </html>
