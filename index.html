@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Racing Game</title>
+    <title>Farm Land Maze Game</title>
     <style>
         body {
             margin: 0;
@@ -11,27 +11,20 @@
             background-color: #f0f0f0;
         }
 
-        #gameCanvas {
+        #mazeCanvas {
             border: 1px solid #000;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
 
-        #donate-button {
+        #score {
             position: absolute;
             top: 10px;
-            right: 10px;
-        }
-
-        #donate {
-            background-color: #4CAF50;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #donate:hover {
-            background-color: #3e8e41;
+            left: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
         }
 
         #game-over {
@@ -42,116 +35,169 @@
             font-size: 36px;
             font-weight: bold;
             color: #f00;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
             display: none;
         }
 
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #000;
+        #mazeCanvas {
+            background-image: linear-gradient(to bottom, #87ceeb, #4682b4);
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    <div id="donate-button">
-        <button id="donate">Donate to Support the Website</button>
-        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
-            <input type="hidden" name="cmd" value="_s-xclick">
-            <input type="hidden" name="hosted_button_id" value="YOUR_PAYPAL_BUTTON_ID">
-            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-            <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-        </form>
-    </div>
-    <div id="game-over">Game Over!</div>
+    <canvas id="mazeCanvas" width="800" height="600"></canvas>
     <div id="score">Score: 0</div>
+    <div id="game-over">Game Over!</div>
 
     <script>
         // Get the canvas element
-        const canvas = document.getElementById('gameCanvas');
+        const canvas = document.getElementById('mazeCanvas');
         const ctx = canvas.getContext('2d');
 
         // Set the canvas dimensions
         canvas.width = 800;
         canvas.height = 600;
 
-        // Define the game variables
-        let playerX = canvas.width / 2;
-        let playerY = canvas.height - 50;
-        let playerSpeed = 5;
-        let playerWidth = 50;
-        let playerHeight = 50;
+        // Define the farm land maze variables
+        const farmLandMaze = [
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+            [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
+            [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+            [1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
+            [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        ];
 
-        let enemyX = Math.random() * (canvas.width - 50);
-        let enemyY = 0;
-        let enemySpeed = 2;
-        let enemyWidth = 50;
-        let enemyHeight = 50;
+        const farmLandFeatures = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 2, 2, 2, 2, 2, 2, 2, 2, 0],
+            [0, 2, 0, 0, 0, 0, 0, 0, 2, 0],
+            [0, 2, 0, 3, 3, 3, 3, 0, 2, 0],
+            [0, 2, 0, 3, 0, 0, 3, 0, 2, 0],
+            [0, 2, 0, 3, 0, 0, 3, 0, 2, 0],
+            [0, 2, 2, 2, 2, 2, 2, 2, 2, 0]
+        ];
 
+        const farmLandObstacles = [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 4, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 4, 0, 0],
+            [0, 0, 0, 0, 4, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        ];
+
+        // Define the player variables
+        let playerX = 1;
+        let playerY = 1;
+        let playerSpeed = 20;
+
+        // Define the score variable
         let score = 0;
+
+        // Draw the farm land maze
+        function drawFarmLandMaze() {
+            for (let i = 0; i < farmLandMaze.length; i++) {
+                for (let j = 0; j < farmLandMaze[i].length; j++) {
+                    if (farmLandMaze[i][j] === 1) {
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(j * 80, i * 80, 80, 80);
+                    }
+                }
+            }
+        }
+
+        // Draw the farm land features
+        function drawFarmLandFeatures() {
+            for (let i = 0; i < farmLandFeatures.length; i++) {
+                for (let j = 0; j < farmLandFeatures[i].length; j++) {
+                    if (farmLandFeatures[i][j] === 2) {
+                        ctx.fillStyle = '#8bc34a';
+                        ctx.fillRect(j * 80, i * 80, 80, 80);
+                    } else if (farmLandFeatures[i][j] === 3) {
+                        ctx.fillStyle = '#6495ed';
+                        ctx.fillRect(j * 80, i * 80, 80, 80);
+                    }
+                }
+            }
+        }
+
+        // Draw the farm land obstacles
+        function drawFarmLandObstacles() {
+            for (let i = 0; i < farmLandObstacles.length; i++) {
+                for (let j = 0; j < farmLandObstacles[i].length; j++) {
+                    if (farmLandObstacles[i][j] === 4) {
+                        ctx.fillStyle = '#f00';
+                        ctx.fillRect(j * 80, i * 80, 80, 80);
+                    }
+                }
+            }
+        }
 
         // Draw the player
         function drawPlayer() {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
-        }
-
-        // Draw the enemy
-        function drawEnemy() {
             ctx.fillStyle = '#f00';
-            ctx.fillRect(enemyX, enemyY, enemyWidth, enemyHeight);
+            ctx.fillRect(playerX * 80, playerY * 80, 80, 80);
         }
 
         // Update the game state
         function update() {
-            // Move the enemy
-            enemyY += enemySpeed;
-
-            // Check for collision with the player
-            if (enemyY + enemyHeight > playerY && enemyX < playerX + playerWidth && enemyX + enemyWidth > playerX) {
+            // Check for collision with the farm land maze walls
+            if (farmLandMaze[playerY][playerX] === 1) {
                 document.getElementById('game-over').style.display = 'block';
                 setTimeout(() => {
                     document.getElementById('game-over').style.display = 'none';
-                    enemyY = 0;
-                    enemyX = Math.random() * (canvas.width - 50);
+                    playerX = 1;
+                    playerY = 1;
                     score = 0;
                     document.getElementById('score').innerHTML = 'Score: 0';
                 }, 2000);
             }
 
-            // Check if the enemy is off the screen
-            if (enemyY > canvas.height) {
-                enemyY = 0;
-                enemyX = Math.random() * (canvas.width - 50);
+            // Check if the player has reached the end of the farm land maze
+            if (playerX === 8 && playerY === 5) {
                 score++;
                 document.getElementById('score').innerHTML = 'Score: ' + score;
+                playerX = 1;
+                playerY = 1;
             }
         }
 
         // Handle user input
         function handleInput(event) {
-            if (event.key === 'ArrowLeft') {
-                playerX -= playerSpeed;
+            if (event.key === 'ArrowUp') {
+                playerY--;
+            } else if (event.key === 'ArrowDown') {
+                playerY++;
+            } else if (event.key === 'ArrowLeft') {
+                playerX--;
             } else if (event.key === 'ArrowRight') {
-                playerX += playerSpeed;
+                playerX++;
             }
 
-            // Check if the player is off the screen
+            // Check if the player is off the farm land maze
             if (playerX < 0) {
                 playerX = 0;
-            } else if (playerX > canvas.width - playerWidth) {
-                playerX = canvas.width - playerWidth;
+            } else if (playerX > 9) {
+                playerX = 9;
+            }
+
+            if (playerY < 0) {
+                playerY = 0;
+            } else if (playerY > 6) {
+                playerY = 6;
             }
         }
 
         // Main game loop
         function loop() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawFarmLandMaze();
+            drawFarmLandFeatures();
+            drawFarmLandObstacles();
             drawPlayer();
-            drawEnemy();
             update();
             requestAnimationFrame(loop);
         }
