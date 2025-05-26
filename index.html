@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bookshelf Website with Escrow</title>
+  <title>Real-Time Bookshelf with Opay Payment</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f9f9f9; }
     .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -18,11 +18,15 @@
     a.download-btn { background: #2196F3; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 10px; }
     a.download-btn:hover { background: #0b7dda; }
     .error { color: red; }
+    #bookshelf { margin-bottom: 20px; }
+    .book { margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+    .realtime-notice { background: #e6f7ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Bookshelf with Escrow</h1>
+    <h1>Real-Time Bookshelf with Opay Payment</h1>
+    <div class="realtime-notice">Bookshelf updates in real time as new books are added!</div>
 
     <!-- Book Upload Form -->
     <div id="upload-section">
@@ -43,7 +47,11 @@
       </form>
     </div>
 
-    <!-- Escrow Section (Shows after validation, before payment) -->
+    <!-- Bookshelf (shows available books) -->
+    <h2>Available Books</h2>
+    <div id="bookshelf"></div>
+
+    <!-- Escrow Section -->
     <div id="escrow-section" class="hidden">
       <div class="escrow">
         <h2>Book in Escrow</h2>
@@ -58,7 +66,7 @@
     <!-- Payment Section -->
     <div id="payment-section" class="hidden">
       <div class="payment-form">
-        <h2>Payment</h2>
+        <h2>Payment with Opay</h2>
         <form id="opayPaymentForm">
           <label>Card Type:</label>
           <select name="cardType">
@@ -67,7 +75,7 @@
             <option value="mastercard">MasterCard</option>
           </select>
           <label>Card Number</label>
-          <input type="text" name="cardNumber" placeholder="1234 5678 9012 3456" required>
+        <input type="text" name="cardNumber" placeholder="1234 5678 9012 3456" required>
           <label>Expiry Date</label>
           <input type="text" name="expiryDate" placeholder="MM/YY" required>
           <label>CVV</label>
@@ -78,7 +86,7 @@
       </div>
     </div>
 
-    <!-- Download Section (Shows after payment) -->
+    <!-- Download Section -->
     <div id="download-section" class="hidden">
       <div class="download">
         <h2>Download Your Book</h2>
@@ -92,8 +100,42 @@
   </div>
 
   <script>
-    // Book data and escrow state
+    // Bookshelf data (simulates a shared, real-time list)
+    let books = [];
     let escrowBook = null;
+
+    // Function to update the bookshelf display
+    function updateBookshelf() {
+      const bookshelf = document.getElementById('bookshelf');
+      bookshelf.innerHTML = '';
+      books.forEach((book, index) => {
+        const bookEl = document.createElement('div');
+        bookEl.className = 'book';
+        bookEl.innerHTML = `
+          <h3>${book.title}</h3>
+          <p>Author: ${book.author}</p>
+          <p>Description: ${book.description}</p>
+          <p>Price: $${book.price}</p>
+          <button onclick="buyBook(${index})">Buy Now</button>
+        `;
+        bookshelf.appendChild(bookEl);
+      });
+    }
+
+    // Simulate real-time updates (add a new book every 10 seconds)
+    setInterval(() => {
+      if (Math.random() > 0.7) { // Simulate occasional new books
+        const newBook = {
+          title: "Sample Book " + (books.length + 1),
+          author: "Author " + (books.length + 1),
+          description: "This is a sample book description.",
+          price: (10 + books.length).toFixed(2),
+          id: Date.now()
+        };
+        books.push(newBook);
+        updateBookshelf();
+      }
+    }, 10000);
 
     // Book upload form
     document.getElementById('bookUploadForm').onsubmit = function(e) {
@@ -112,10 +154,7 @@
         return;
       }
 
-      // Simulate server-side validation and escrow
-      escrowBook = {
-        title, author, description, price, bookFile
-      };
+      escrowBook = { title, author, description, price, bookFile };
 
       // Show escrow section
       document.getElementById('upload-section').classList.add('hidden');
@@ -134,6 +173,22 @@
       document.getElementById('payment-section').classList.remove('hidden');
     };
 
+    // Buy book from bookshelf
+    function buyBook(bookIndex) {
+      const book = books[bookIndex];
+      escrowBook = {
+        title: book.title,
+        author: book.author,
+        description: book.description,
+        price: book.price,
+        bookFile: null // In a real app, this would be the actual file
+      };
+      document.getElementById('upload-section').classList.add('hidden');
+      document.getElementById('escrow-section').classList.add('hidden');
+      document.getElementById('payment-section').classList.remove('hidden');
+      document.getElementById('download-section').classList.add('hidden');
+    }
+
     // Payment form
     document.getElementById('opayPaymentForm').onsubmit = function(e) {
       e.preventDefault();
@@ -142,20 +197,17 @@
       const expiryDate = document.querySelector('#opayPaymentForm input[name="expiryDate"]').value;
       const cvv = document.querySelector('#opayPaymentForm input[name="cvv"]').value;
 
-      // Simulate payment processing (in a real app, call Opay API)
+      // Simulate Opay payment (replace with real API call)
       simulateOpayPayment(cardType, cardNumber, expiryDate, cvv, function(success) {
         if (success) {
-          // Payment confirmed: release escrow and show download
           document.getElementById('payment-section').classList.add('hidden');
           document.getElementById('download-section').classList.remove('hidden');
           document.getElementById('download-title').textContent = escrowBook.title;
           document.getElementById('download-author').textContent = escrowBook.author;
           document.getElementById('download-price').textContent = escrowBook.price;
-          // In a real app, upload the book file to your server and set the download link
-          // For demo, show a simulated download (file is not actually uploaded)
           document.getElementById('download-link').addEventListener('click', function(e) {
             e.preventDefault();
-            alert('Book download would start here. In a real app, the book file would be uploaded and available for download.');
+            alert('Book download would start here. In a real app, the book file would be available for download.');
           });
         } else {
           document.getElementById('paymentError').textContent = 'Payment failed. Please try again.';
@@ -165,12 +217,12 @@
     };
 
     function simulateOpayPayment(cardType, cardNumber, expiryDate, cvv, callback) {
-      // Simulate payment processing
-      setTimeout(function() {
-        // For demo, always return success
-        callback(true);
-      }, 1000);
+      // In a real app, use Opay API here (see previous example)
+      setTimeout(function() { callback(true); }, 1000);
     }
+
+    // Initial bookshelf update
+    updateBookshelf();
   </script>
 </body>
 </html>
