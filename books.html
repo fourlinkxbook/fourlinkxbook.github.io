@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Browse Books</title>
+  <title>Fourlinkx BookShelf – Funny Books</title>
+  <meta name="description" content="Browse the most hilarious and engaging books at Fourlinkx BookShelf. Click, laugh, and discover!">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <style>
     :root {
       --primary: #4CAF50;
@@ -27,13 +29,14 @@
     }
     nav {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       padding: 0.5rem;
     }
     nav a {
       color: white;
       text-decoration: none;
-      margin: 0 1rem;
+      margin: 0.5rem;
       padding: 0.5rem 1rem;
       border-radius: 4px;
       transition: background 0.2s;
@@ -125,6 +128,10 @@
       .modal-content {
         width: 90%;
       }
+      main {
+        margin: 1rem;
+        padding: 0.5rem;
+      }
     }
   </style>
 </head>
@@ -137,26 +144,38 @@
     </nav>
   </header>
   <main>
-    <h1>Browse Books</h1>
+    <h1>Fourlinkx BookShelf</h1>
     <input type="text" id="search" placeholder="Search books...">
     <div id="books">
       <div class="book" onclick="showDonationPrompt()">
-        <h3>The Great Adventure</h3>
-        <p>Author: Jane Doe</p>
+        <h3>The Secret Life of Socks: A Laundry Love Story</h3>
+        <p>Author: Jane Doodle</p>
       </div>
       <div class="book" onclick="showDonationPrompt()">
-        <h3>Science Today</h3>
-        <p>Author: John Smith</p>
+        <h3>How to Train Your Plant: A Gardener's Memoir</h3>
+        <p>Author: John Greenleaf</p>
       </div>
       <div class="book" onclick="showDonationPrompt()">
-        <h3>History Uncovered</h3>
-        <p>Author: Alice Wonder</p>
+        <h3>Pancakes vs. Waffles: The Great Breakfast Debate</h3>
+        <p>Author: Alice Batter</p>
+      </div>
+      <div class="book" onclick="showDonationPrompt()">
+        <h3>Why Did the Chicken Cross the Road? (And Other Mysteries)</h3>
+        <p>Author: Eggbert Cluck</p>
+      </div>
+      <div class="book" onclick="showDonationPrompt()">
+        <h3>My Cat Wrote This Book (And She's Not Sorry)</h3>
+        <p>Author: Whiskers McFluffy</p>
+      </div>
+      <div class="book" onclick="showDonationPrompt()">
+        <h3>The Art of Napping: A Guide to Professional Relaxation</h3>
+        <p>Author: Snooze Evermore</p>
       </div>
     </div>
   </main>
   <div id="donationModal" class="modal">
     <div class="modal-content">
-      <h2>Support Our Project!</h2>
+      <h2>Support Fourlinkx BookShelf!</h2>
       <p>Would you like to make a donation to help bring this project to life?</p>
       <div class="modal-buttons">
         <button class="modal-btn modal-btn-donate" onclick="window.location.href='donate.html'">Donate</button>
@@ -171,7 +190,7 @@
     function closeModal() {
       document.getElementById('donationModal').style.display = 'none';
     }
-    // Simple search function (optional)
+    // Simple search function
     document.getElementById('search').addEventListener('input', function() {
       const search = this.value.toLowerCase();
       const books = document.querySelectorAll('.book');
