@@ -5,39 +5,113 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Support Our Project</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-    nav { background: #f0f0f0; padding: 10px; margin-bottom: 20px; }
-    nav a { margin-right: 15px; color: #2196F3; text-decoration: none; }
-    .bank-details { background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0; }
-    .contact-form { margin-top: 20px; }
-    .contact-form input, .contact-form textarea { display: block; width: 100%; margin: 5px 0 15px; padding: 8px; }
-    .contact-form button { padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 4px; }
+    :root {
+      --primary: #4CAF50;
+      --secondary: #2196F3;
+      --accent: #FFC107;
+      --light: #f8f9fa;
+      --dark: #212529;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    nav a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    main {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .bank-details {
+      background: #f9f9f9;
+      padding: 1.5rem;
+      border-radius: 8px;
+      margin: 1.5rem 0;
+    }
+    .contact-form {
+      margin-top: 1.5rem;
+    }
+    .contact-form input, .contact-form textarea {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0 1rem;
+      padding: 0.8rem;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    .contact-form button {
+      padding: 0.8rem 2rem;
+      background: var(--accent);
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .contact-form button:hover {
+      background: #FFD700;
+    }
+    h1, h2, h3 {
+      color: var(--primary);
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="books.html">Books</a>
-    <a href="donate.html">Support Us</a>
-  </nav>
-  <h1>Support Our Project</h1>
-  <p>Your donation helps us bring this project to life and keep improving it for everyone.</p>
-  <h3>How to Donate</h3>
-  <div class="bank-details">
-    <p><strong>Account Name:</strong> Your Name</p>
-    <p><strong>Account Number:</strong> 1234567890</p>
-    <p><strong>Bank Name:</strong> Example Bank</p>
-  </div>
-  <h3>Contact Us After Donating</h3>
-  <div class="contact-form">
-    <!-- REPLACE YOUR_FORM_ID WITH YOUR FORMSPREE ID -->
-    <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-      <input type="text" name="name" placeholder="Your Name" required>
-      <input type="email" name="email" placeholder="Your Email" required>
-      <input type="text" name="subject" value="Donation Confirmation" readonly>
-      <textarea name="message" placeholder="Your message or transaction reference" required></textarea>
-      <button type="submit">Send</button>
-    </form>
-  </div>
+  <header>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="books.html">Books</a>
+      <a href="donate.html">Support Us</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Support Our Project</h1>
+    <p>Your donation helps us bring this project to life and keep improving it for everyone.</p>
+    <h2>How to Donate</h2>
+    <div class="bank-details">
+      <p><strong>Account Name:</strong> Fourlinkx Information Technology Service s</p>
+      <p><strong>Account Number:</strong> 4091786172</p>
+      <p><strong>Bank Name:</strong> Polaris Bank</p>
+    </div>
+    <h2>Contact Us After Donating</h2>
+    <div class="contact-form">
+      <!-- REPLACE YOUR_FORM_ID WITH YOUR FORMSPREE ID -->
+      <form action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+        <input type="text" name="name" placeholder="Your Name" required>
+        <input type="email" name="email" placeholder="Your Email" required>
+        <input type="text" name="subject" value="Donation Confirmation" readonly>
+        <textarea name="message" placeholder="Your message or transaction reference" required></textarea>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </main>
 </body>
 </html>
