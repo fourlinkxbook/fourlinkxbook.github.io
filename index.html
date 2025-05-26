@@ -30,7 +30,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/loaders/GLTFLoader.js"></script>
   <script>
     let scene, camera, renderer, controls, playerCar, aiCar;
     let gameRunning = false;
@@ -74,29 +73,19 @@
       road.position.y = -0.4;
       scene.add(road);
 
-      // Load car models
-      const loader = new THREE.GLTFLoader();
+      // Player Car (simple box with color)
+      const playerCarGeo = new THREE.BoxGeometry(2, 1, 4);
+      const playerCarMat = new THREE.MeshStandardMaterial({ color: 0xff4444 });
+      playerCar = new THREE.Mesh(playerCarGeo, playerCarMat);
+      playerCar.position.set(playerX, 0, playerZ);
+      scene.add(playerCar);
 
-      // Replace this URL with your own hosted GLB car model file!
-      const carModelUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ferrari.glb';
-      // For a real car, upload your own GLB to GitHub Pages or another host and use that URL here.
-  
-
-      loader.load(carModelUrl, function(gltf) {
-        playerCar = gltf.scene;
-        playerCar.scale.set(0.5, 0.5, 0.5);
-        playerCar.position.set(playerX, 0, playerZ);
-        playerCar.rotation.y = Math.PI;
-        scene.add(playerCar);
-      });
-
-      loader.load(carModelUrl, function(gltf) {
-        aiCar = gltf.scene;
-        aiCar.scale.set(0.5, 0.5, 0.5);
-        aiCar.position.set(aiX, 0, aiZ);
-        aiCar.rotation.y = Math.PI;
-        scene.add(aiCar);
-      });
+      // AI Car (simple box with color)
+      const aiCarGeo = new THREE.BoxGeometry(2, 1, 4);
+      const aiCarMat = new THREE.MeshStandardMaterial({ color: 0x4444ff });
+      aiCar = new THREE.Mesh(aiCarGeo, aiCarMat);
+      aiCar.position.set(aiX, 0, aiZ);
+      scene.add(aiCar);
 
       // Controls for camera (optional)
       controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -126,8 +115,8 @@
           aiZ = -10;
           playerX = 0;
           aiX = 0;
-          if (playerCar) playerCar.position.set(playerX, 0, playerZ);
-          if (aiCar) aiCar.position.set(aiX, 0, aiZ);
+          playerCar.position.set(playerX, 0, playerZ);
+          aiCar.position.set(aiX, 0, aiZ);
         }
       };
       restartBtn.onclick = () => {
@@ -136,8 +125,8 @@
         aiZ = -10;
         playerX = 0;
         aiX = 0;
-        if (playerCar) playerCar.position.set(playerX, 0, playerZ);
-        if (aiCar) aiCar.position.set(aiX, 0, aiZ);
+        playerCar.position.set(playerX, 0, playerZ);
+        aiCar.position.set(aiX, 0, aiZ);
       };
 
       // Animation loop
@@ -146,8 +135,8 @@
         if (gameRunning) {
           playerZ += playerSpeed;
           aiZ += aiSpeed;
-          if (playerCar) playerCar.position.set(playerX, 0, playerZ);
-          if (aiCar) aiCar.position.set(aiX, 0, aiZ);
+          playerCar.position.set(playerX, 0, playerZ);
+          aiCar.position.set(aiX, 0, aiZ);
         }
         renderer.render(scene, camera);
         controls.update();
