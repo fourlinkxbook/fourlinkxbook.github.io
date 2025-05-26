@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Support Our Project</title>
+  <title>Support Fourlinkx BookShelf</title>
+  <meta name="description" content="Support Fourlinkx BookShelf with your donation. Help us grow and keep bringing you the best books!">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <style>
     :root {
       --primary: #4CAF50;
@@ -27,13 +29,14 @@
     }
     nav {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       padding: 0.5rem;
     }
     nav a {
       color: white;
       text-decoration: none;
-      margin: 0 1rem;
+      margin: 0.5rem;
       padding: 0.5rem 1rem;
       border-radius: 4px;
       transition: background 0.2s;
@@ -82,6 +85,12 @@
     h1, h2, h3 {
       color: var(--primary);
     }
+    @media (max-width: 500px) {
+      main {
+        margin: 1rem;
+        padding: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -93,7 +102,7 @@
     </nav>
   </header>
   <main>
-    <h1>Support Our Project</h1>
+    <h1>Support Fourlinkx BookShelf</h1>
     <p>Your donation helps us bring this project to life and keep improving it for everyone.</p>
     <h2>How to Donate</h2>
     <div class="bank-details">
