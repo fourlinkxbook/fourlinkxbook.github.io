@@ -24,25 +24,30 @@
     header {
       background: linear-gradient(to right, var(--primary), var(--secondary));
       color: white;
-      padding: 1.5rem;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 1.5rem 1rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
     nav {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
+      gap: 1rem;
       padding: 0.5rem;
     }
     nav a {
       color: white;
       text-decoration: none;
-      margin: 0.5rem;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      transition: background 0.2s;
+      padding: 0.7rem 1.2rem;
+      border-radius: 25px;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.2s, transform 0.2s;
     }
     nav a:hover {
       background: rgba(255,255,255,0.2);
+      transform: translateY(-2px);
     }
     main {
       max-width: 600px;
@@ -106,9 +111,9 @@
     <p>Your donation helps us bring this project to life and keep improving it for everyone.</p>
     <h2>How to Donate</h2>
     <div class="bank-details">
-      <p><strong>Account Name:</strong> Fourlinkx Information Technology Services</p>
-      <p><strong>Account Number:</strong> 4091786172</p>
-      <p><strong>Bank Name:</strong> Polaris Bank</p>
+      <p><strong>Account Name:</strong> Your Name</p>
+      <p><strong>Account Number:</strong> 1234567890</p>
+      <p><strong>Bank Name:</strong> Example Bank</p>
     </div>
     <h2>Contact Us After Donating</h2>
     <div class="contact-form">
