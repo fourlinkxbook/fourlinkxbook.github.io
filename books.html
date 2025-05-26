@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Browse Books</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    nav { background: #f0f0f0; padding: 10px; margin-bottom: 20px; }
+    nav a { margin-right: 15px; color: #2196F3; text-decoration: none; }
+    .book { border: 1px solid #ddd; padding: 10px; margin: 10px 0; cursor: pointer; }
+    .book:hover { background: #f9f9f9; }
+    #search { width: 100%; padding: 8px; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="books.html">Books</a>
+    <a href="donate.html">Support Us</a>
+  </nav>
+  <h1>Browse Books</h1>
+  <input type="text" id="search" placeholder="Search books...">
+  <div id="books">
+    <div class="book" onclick="showDonationPrompt()">
+      <h3>The Great Adventure</h3>
+      <p>Author: Jane Doe</p>
+    </div>
+    <div class="book" onclick="showDonationPrompt()">
+      <h3>Science Today</h3>
+      <p>Author: John Smith</p>
+    </div>
+    <div class="book" onclick="showDonationPrompt()">
+      <h3>History Uncovered</h3>
+      <p>Author: Alice Wonder</p>
+    </div>
+  </div>
+  <script>
+    function showDonationPrompt() {
+      if (confirm('Support our project! Would you like to make a donation to help bring it to life?')) {
+        window.location.href = 'donate.html';
+      }
+    }
+  </script>
+</body>
+</html>
