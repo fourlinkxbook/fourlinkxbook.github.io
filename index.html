@@ -1,212 +1,169 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Farm Land Maze Game</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
-        }
-
-        #mazeCanvas {
-            border: 1px solid #000;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #000;
-            text-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
-        }
-
-        #game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 36px;
-            font-weight: bold;
-            color: #f00;
-            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
-            display: none;
-        }
-
-        #mazeCanvas {
-            background-image: linear-gradient(to bottom, #87ceeb, #4682b4);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Car Racing AI Game</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
+<style>body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #222;
+  text-align: center;
+  color: white;
+}
+
+h1 {
+  margin: 10px;
+}
+
+#gameCanvas {
+  border: 2px solid #fff;
+  display: block;
+  margin: 20px auto;
+  background-color: #333;
+}
+
+#scoreContainer {
+  font-size: 20px;
+  margin-top: 10px;
+}
+</style>
 <body>
-    <canvas id="mazeCanvas" width="800" height="600"></canvas>
-    <div id="score">Score: 0</div>
-    <div id="game-over">Game Over!</div>
+  <h1>Car Racing AI Game</h1>
+  <canvas id="gameCanvas"></canvas>
+  <div id="scoreContainer">
+    Score: <span id="score">0</span>
+  </div>
+  <script>const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const scoreSpan = document.getElementById("score");
 
-    <script>
-        // Get the canvas element
-        const canvas = document.getElementById('mazeCanvas');
-        const ctx = canvas.getContext('2d');
+canvas.width = 400;
+canvas.height = 600;
 
-        // Set the canvas dimensions
-        canvas.width = 800;
-        canvas.height = 600;
+let player = {
+    x: 180,
+    y: 520,
+    width: 40,
+    height: 70,
+    color: "blue",
+    speed: 5
+};
 
-        // Define the farm land maze variables
-        const farmLandMaze = [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-            [1, 0, 1, 1, 0, 1, 1, 1, 0, 1],
-            [1, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-            [1, 0, 1, 0, 1, 1, 0, 1, 0, 1],
-            [1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-        ];
+let aiCars = [];
+let roadLines = [];
+let gameOver = false;
+let score = 0;
 
-        const farmLandFeatures = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 2, 2, 2, 2, 2, 2, 2, 2, 0],
-            [0, 2, 0, 0, 0, 0, 0, 0, 2, 0],
-            [0, 2, 0, 3, 3, 3, 3, 0, 2, 0],
-            [0, 2, 0, 3, 0, 0, 3, 0, 2, 0],
-            [0, 2, 0, 3, 0, 0, 3, 0, 2, 0],
-            [0, 2, 2, 2, 2, 2, 2, 2, 2, 0]
-        ];
+// Handle keyboard input
+const keys = {Left: false,Right: false};
+document.addEventListener("keydown", (e) => {
+    if(e.key === "ArrowLeft") keys.Left = true;
+    if(e.key === "ArrowRight") keys.Right = true;
+});
+document.addEventListener("keyup", (e) => {
+    if(e.key === "ArrowLeft") keys.Left = false;
+    if(e.key === "ArrowRight") keys.Right = false;
+});
 
-        const farmLandObstacles = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 4, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 4, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 4, 0, 0],
-            [0, 0, 0, 0, 4, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ];
+// Create road lines
+for(let i=0; i<10; i++){
+    roadLines.push({y: i*60, x:175, width:50, height:10, color:"#fff"});
+}
 
-        // Define the player variables
-        let playerX = 1;
-        let playerY = 1;
-        let playerSpeed = 20;
+// Create AI cars
+function createAICar() {
+    const lanePositions = [100, 180, 260];
+    const x = lanePositions[Math.floor(Math.random() * lanePositions.length)];
+    const y = -100;
+    const speed = 3 + Math.random() * 2; // variable speed
+    return {x, y, width:40, height:70, color:"red", speed};
+}
 
-        // Define the score variable
-        let score = 0;
+// Initialize AI cars
+for(let i=0; i<3; i++){
+    aiCars.push(createAICar());
+}
 
-        // Draw the farm land maze
-        function drawFarmLandMaze() {
-            for (let i = 0; i < farmLandMaze.length; i++) {
-                for (let j = 0; j < farmLandMaze[i].length; j++) {
-                    if (farmLandMaze[i][j] === 1) {
-                        ctx.fillStyle = '#000';
-                        ctx.fillRect(j * 80, i * 80, 80, 80);
-                    }
-                }
-            }
+// Draw functions
+function drawCar(car) {
+    ctx.fillStyle = car.color;
+    ctx.fillRect(car.x, car.y, car.width, car.height);
+}
+
+function drawRoadLines() {
+    ctx.fillStyle = "#fff";
+    for(let line of roadLines){
+        ctx.fillRect(line.x, line.y, line.width, line.height);
+    }
+}
+
+// Update functions
+function update() {
+    if(gameOver) return;
+
+    // Move player
+    if(keys.Left && player.x > 50) player.x -= player.speed;
+    if(keys.Right && player.x < canvas.width - player.width - 50) player.x += player.speed;
+
+    // Move road lines
+    for(let line of roadLines){
+        line.y += 5;
+        if(line.y > canvas.height){
+            line.y = -10;
         }
+    }
 
-        // Draw the farm land features
-        function drawFarmLandFeatures() {
-            for (let i = 0; i < farmLandFeatures.length; i++) {
-                for (let j = 0; j < farmLandFeatures[i].length; j++) {
-                    if (farmLandFeatures[i][j] === 2) {
-                        ctx.fillStyle = '#8bc34a';
-                        ctx.fillRect(j * 80, i * 80, 80, 80);
-                    } else if (farmLandFeatures[i][j] === 3) {
-                        ctx.fillStyle = '#6495ed';
-                        ctx.fillRect(j * 80, i * 80, 80, 80);
-                    }
-                }
-            }
+    // Move AI cars
+    for(let car of aiCars){
+        car.y += car.speed;
+        if(car.y > canvas.height + 10){
+            car.y = -car.height;
+            // reset position to random lane
+            const lanes = [100, 180, 260];
+            car.x = lanes[Math.floor(Math.random() * lanes.length)];
+            car.speed = 3 + Math.random() * 2;
         }
-
-        // Draw the farm land obstacles
-        function drawFarmLandObstacles() {
-            for (let i = 0; i < farmLandObstacles.length; i++) {
-                for (let j = 0; j < farmLandObstacles[i].length; j++) {
-                    if (farmLandObstacles[i][j] === 4) {
-                        ctx.fillStyle = '#f00';
-                        ctx.fillRect(j * 80, i * 80, 80, 80);
-                    }
-                }
-            }
+        // Check collision with player
+        if(
+            player.x < car.x + car.width &&
+            player.x + player.width > car.x &&
+            player.y < car.y + car.height &&
+            player.y + player.height > car.y
+        ){
+            gameOver = true;
+            alert("Game Over! Your Score: " + score);
         }
+    }
 
-        // Draw the player
-        function drawPlayer() {
-            ctx.fillStyle = '#f00';
-            ctx.fillRect(playerX * 80, playerY * 80, 80, 80);
-        }
+    // Update score
+    score++;
+    scoreSpan.innerText = score;
+}
 
-        // Update the game state
-        function update() {
-            // Check for collision with the farm land maze walls
-            if (farmLandMaze[playerY][playerX] === 1) {
-                document.getElementById('game-over').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('game-over').style.display = 'none';
-                    playerX = 1;
-                    playerY = 1;
-                    score = 0;
-                    document.getElementById('score').innerHTML = 'Score: 0';
-                }, 2000);
-            }
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawRoadLines();
+    drawCar(player);
+    for(let car of aiCars){
+        drawCar(car);
+    }
+}
 
-            // Check if the player has reached the end of the farm land maze
-            if (playerX === 8 && playerY === 5) {
-                score++;
-                document.getElementById('score').innerHTML = 'Score: ' + score;
-                playerX = 1;
-                playerY = 1;
-            }
-        }
+// Main game loop
+function gameLoop() {
+    update();
+    draw();
+    if(!gameOver){
+        requestAnimationFrame(gameLoop);
+    }
+}
 
-        // Handle user input
-        function handleInput(event) {
-            if (event.key === 'ArrowUp') {
-                playerY--;
-            } else if (event.key === 'ArrowDown') {
-                playerY++;
-            } else if (event.key === 'ArrowLeft') {
-                playerX--;
-            } else if (event.key === 'ArrowRight') {
-                playerX++;
-            }
-
-            // Check if the player is off the farm land maze
-            if (playerX < 0) {
-                playerX = 0;
-            } else if (playerX > 9) {
-                playerX = 9;
-            }
-
-            if (playerY < 0) {
-                playerY = 0;
-            } else if (playerY > 6) {
-                playerY = 6;
-            }
-        }
-
-        // Main game loop
-        function loop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawFarmLandMaze();
-            drawFarmLandFeatures();
-            drawFarmLandObstacles();
-            drawPlayer();
-            update();
-            requestAnimationFrame(loop);
-        }
-
-        // Start the game loop
-        loop();
-
-        // Add event listener for user input
-        document.addEventListener('keydown', handleInput);
-    </script>
+// Start game
+gameLoop();
+</script>
 </body>
 </html>
