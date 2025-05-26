@@ -1,156 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>AI Car Racing Game (3D)</title>
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookshelf Website with Escrow</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #333; font-family: Arial, sans-serif; }
-    #game { width: 100%; height: 100vh; }
-    #controls { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 20px; }
-    button { padding: 10px 20px; font-size: 18px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    #mobile-controls { display: none; position: absolute; bottom: 80px; width: 100%; justify-content: space-between; user-select: none; }
-    .mobile-btn { width: 80px; height: 80px; background: rgba(0,0,0,0.4); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; }
-    #instructions { position: absolute; top: 20px; width: 100%; text-align: center; color: #fff; font-size: 16px; }
-    @media (max-width: 600px) {
-      #mobile-controls { display: flex; }
-    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f9f9f9; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    form { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    button { background: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .hidden { display: none; }
+    .escrow { background: #fff8e1; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+    .download { padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+    a.download-btn { background: #2196F3; color: white; padding: 10px 15px; border-radius: 5px; text-decoration: none; display: inline-block; margin-top: 10px; }
+    a.download-btn:hover { background: #0b7dda; }
+    .error { color: red; }
   </style>
 </head>
 <body>
-  <div id="instructions">Use LEFT/RIGHT arrow keys or tap the buttons below to move your car!</div>
-  <div id="game"></div>
-  <div id="mobile-controls">
-    <div class="mobile-btn" id="left-btn">←</div>
-    <div class="mobile-btn" id="right-btn">→</div>
-  </div>
-  <div id="controls">
-    <button id="start">Start</button>
-    <button id="restart">Restart</button>
+  <div class="container">
+    <h1>Bookshelf with Escrow</h1>
+
+    <!-- Book Upload Form -->
+    <div id="upload-section">
+      <form id="bookUploadForm">
+        <h2>Upload a Book</h2>
+        <label>Book Title*</label>
+        <input type="text" name="title" required>
+        <label>Author*</label>
+        <input type="text" name="author" required>
+        <label>Description*</label>
+        <textarea name="description" rows="3" required></textarea>
+        <label>Price*</label>
+        <input type="number" name="price" step="0.01" required>
+        <label>Select Book File (PDF)*</label>
+        <input type="file" name="bookFile" accept=".pdf" required>
+        <button type="submit">Upload and Proceed to Payment</button>
+        <div id="uploadError" class="error hidden"></div>
+      </form>
+    </div>
+
+    <!-- Escrow Section (Shows after validation, before payment) -->
+    <div id="escrow-section" class="hidden">
+      <div class="escrow">
+        <h2>Book in Escrow</h2>
+        <p>Your book has been validated and is ready for payment.</p>
+        <p>Book: <span id="escrow-title"></span></p>
+        <p>Author: <span id="escrow-author"></span></p>
+        <p>Price: $<span id="escrow-price"></span></p>
+        <button id="proceed-to-payment">Proceed to Payment</button>
+      </div>
+    </div>
+
+    <!-- Payment Section -->
+    <div id="payment-section" class="hidden">
+      <div class="payment-form">
+        <h2>Payment</h2>
+        <form id="opayPaymentForm">
+          <label>Card Type:</label>
+          <select name="cardType">
+            <option value="visa">Visa</option>
+            <option value="verve">Verve Card</option>
+            <option value="mastercard">MasterCard</option>
+          </select>
+          <label>Card Number</label>
+          <input type="text" name="cardNumber" placeholder="1234 5678 9012 3456" required>
+          <label>Expiry Date</label>
+          <input type="text" name="expiryDate" placeholder="MM/YY" required>
+          <label>CVV</label>
+          <input type="text" name="cvv" placeholder="123" required>
+          <button type="submit">Pay with Opay</button>
+          <div id="paymentError" class="error hidden"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Download Section (Shows after payment) -->
+    <div id="download-section" class="hidden">
+      <div class="download">
+        <h2>Download Your Book</h2>
+        <p>Thank you for your purchase!</p>
+        <p>Book: <span id="download-title"></span></p>
+        <p>Author: <span id="download-author"></span></p>
+        <p>Price: $<span id="download-price"></span></p>
+        <a href="#" id="download-link" class="download-btn">Download Book</a>
+      </div>
+    </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/OrbitControls.js"></script>
   <script>
-    let scene, camera, renderer, controls, playerCar, aiCar;
-    let gameRunning = false;
-    let playerZ = 0, aiZ = -10;
-    let playerX = 0, aiX = 0;
-    const playerSpeed = 0.1;
-    const aiSpeed = 0.08;
+    // Book data and escrow state
+    let escrowBook = null;
 
-    function init() {
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 10, 20);
-      camera.lookAt(0, 0, 0);
+    // Book upload form
+    document.getElementById('bookUploadForm').onsubmit = function(e) {
+      e.preventDefault();
+      const form = e.target;
+      const title = form.title.value;
+      const author = form.author.value;
+      const description = form.description.value;
+      const price = form.price.value;
+      const bookFile = form.bookFile.files[0];
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.getElementById('game').appendChild(renderer.domElement);
-
-      // Lights
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      scene.add(ambientLight);
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(0, 10, 10);
-      scene.add(directionalLight);
-
-      // Ground
-      const ground = new THREE.Mesh(
-        new THREE.PlaneGeometry(100, 100),
-        new THREE.MeshStandardMaterial({ color: 0x555555, side: THREE.DoubleSide })
-      );
-      ground.rotation.x = -Math.PI / 2;
-      ground.position.y = -0.5;
-      scene.add(ground);
-
-      // Road
-      const road = new THREE.Mesh(
-        new THREE.PlaneGeometry(10, 100),
-        new THREE.MeshStandardMaterial({ color: 0x333333, side: THREE.DoubleSide })
-      );
-      road.rotation.x = -Math.PI / 2;
-      road.position.y = -0.4;
-      scene.add(road);
-
-      // Player Car (simple box with color)
-      const playerCarGeo = new THREE.BoxGeometry(2, 1, 4);
-      const playerCarMat = new THREE.MeshStandardMaterial({ color: 0xff4444 });
-      playerCar = new THREE.Mesh(playerCarGeo, playerCarMat);
-      playerCar.position.set(playerX, 0, playerZ);
-      scene.add(playerCar);
-
-      // AI Car (simple box with color)
-      const aiCarGeo = new THREE.BoxGeometry(2, 1, 4);
-      const aiCarMat = new THREE.MeshStandardMaterial({ color: 0x4444ff });
-      aiCar = new THREE.Mesh(aiCarGeo, aiCarMat);
-      aiCar.position.set(aiX, 0, aiZ);
-      scene.add(aiCar);
-
-      // Controls for camera (optional)
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableZoom = true;
-      controls.enablePan = false;
-
-      // Event listeners for mobile controls
-      const leftBtn = document.getElementById('left-btn');
-      const rightBtn = document.getElementById('right-btn');
-      leftBtn.addEventListener('touchstart', () => { if (gameRunning) playerX -= 1; });
-      rightBtn.addEventListener('touchstart', () => { if (gameRunning) playerX += 1; });
-
-      // Keyboard controls
-      document.addEventListener('keydown', (e) => {
-        if (!gameRunning) return;
-        if (e.key === 'ArrowLeft') playerX -= 1;
-        if (e.key === 'ArrowRight') playerX += 1;
-      });
-
-      // Start/restart buttons
-      const startBtn = document.getElementById('start');
-      const restartBtn = document.getElementById('restart');
-      startBtn.onclick = () => {
-        if (!gameRunning) {
-          gameRunning = true;
-          playerZ = 0;
-          aiZ = -10;
-          playerX = 0;
-          aiX = 0;
-          playerCar.position.set(playerX, 0, playerZ);
-          aiCar.position.set(aiX, 0, aiZ);
-        }
-      };
-      restartBtn.onclick = () => {
-        gameRunning = false;
-        playerZ = 0;
-        aiZ = -10;
-        playerX = 0;
-        aiX = 0;
-        playerCar.position.set(playerX, 0, playerZ);
-        aiCar.position.set(aiX, 0, aiZ);
-      };
-
-      // Animation loop
-      function animate() {
-        requestAnimationFrame(animate);
-        if (gameRunning) {
-          playerZ += playerSpeed;
-          aiZ += aiSpeed;
-          playerCar.position.set(playerX, 0, playerZ);
-          aiCar.position.set(aiX, 0, aiZ);
-        }
-        renderer.render(scene, camera);
-        controls.update();
+      // Validate data
+      if (!title || !author || !description || !price || !bookFile) {
+        document.getElementById('uploadError').textContent = 'Please fill in all required fields.';
+        document.getElementById('uploadError').classList.remove('hidden');
+        return;
       }
-      animate();
 
-      // Handle window resize
-      window.addEventListener('resize', function() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+      // Simulate server-side validation and escrow
+      escrowBook = {
+        title, author, description, price, bookFile
+      };
+
+      // Show escrow section
+      document.getElementById('upload-section').classList.add('hidden');
+      document.getElementById('escrow-section').classList.remove('hidden');
+      document.getElementById('escrow-title').textContent = title;
+      document.getElementById('escrow-author').textContent = author;
+      document.getElementById('escrow-price').textContent = price;
+      document.getElementById('payment-section').classList.add('hidden');
+      document.getElementById('download-section').classList.add('hidden');
+      document.getElementById('uploadError').classList.add('hidden');
+    };
+
+    // Proceed to payment button
+    document.getElementById('proceed-to-payment').onclick = function() {
+      document.getElementById('escrow-section').classList.add('hidden');
+      document.getElementById('payment-section').classList.remove('hidden');
+    };
+
+    // Payment form
+    document.getElementById('opayPaymentForm').onsubmit = function(e) {
+      e.preventDefault();
+      const cardType = document.querySelector('#opayPaymentForm select[name="cardType"]').value;
+      const cardNumber = document.querySelector('#opayPaymentForm input[name="cardNumber"]').value;
+      const expiryDate = document.querySelector('#opayPaymentForm input[name="expiryDate"]').value;
+      const cvv = document.querySelector('#opayPaymentForm input[name="cvv"]').value;
+
+      // Simulate payment processing (in a real app, call Opay API)
+      simulateOpayPayment(cardType, cardNumber, expiryDate, cvv, function(success) {
+        if (success) {
+          // Payment confirmed: release escrow and show download
+          document.getElementById('payment-section').classList.add('hidden');
+          document.getElementById('download-section').classList.remove('hidden');
+          document.getElementById('download-title').textContent = escrowBook.title;
+          document.getElementById('download-author').textContent = escrowBook.author;
+          document.getElementById('download-price').textContent = escrowBook.price;
+          // In a real app, upload the book file to your server and set the download link
+          // For demo, show a simulated download (file is not actually uploaded)
+          document.getElementById('download-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Book download would start here. In a real app, the book file would be uploaded and available for download.');
+          });
+        } else {
+          document.getElementById('paymentError').textContent = 'Payment failed. Please try again.';
+          document.getElementById('paymentError').classList.remove('hidden');
+        }
       });
+    };
+
+    function simulateOpayPayment(cardType, cardNumber, expiryDate, cvv, callback) {
+      // Simulate payment processing
+      setTimeout(function() {
+        // For demo, always return success
+        callback(true);
+      }, 1000);
     }
-    window.onload = init;
   </script>
 </body>
 </html>
