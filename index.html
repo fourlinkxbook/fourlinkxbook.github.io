@@ -34,13 +34,11 @@
   <script>
     let scene, camera, renderer, controls, playerCar, aiCar;
     let gameRunning = false;
-    let playerZ = 0, aiZ = 0;
-    let score = 0;
+    let playerZ = 0, aiZ = -10;
+    let playerX = 0, aiX = 0;
     const playerSpeed = 0.1;
     const aiSpeed = 0.08;
-    let playerX = 0, aiX = 0;
 
-    // Set up scene
     function init() {
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -76,11 +74,14 @@
       road.position.y = -0.4;
       scene.add(road);
 
-      // Load car models (replace with your own GLTF/GLB files)
+      // Load car models
       const loader = new THREE.GLTFLoader();
-      // NOTE: You must use your own car model URLs here!
-      // For demo, we use a placeholder (does not work unless you have a valid GLTF/GLB URL)
-      loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ferrari.glb', function(gltf) {
+
+      // Replace this URL with your own hosted GLB car model file!
+      const carModelUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ferrari.glb';
+      // For a real car, upload your own GLB to GitHub Pages or another host and use that URL here.
+
+      loader.load(carModelUrl, function(gltf) {
         playerCar = gltf.scene;
         playerCar.scale.set(0.5, 0.5, 0.5);
         playerCar.position.set(playerX, 0, playerZ);
@@ -88,10 +89,10 @@
         scene.add(playerCar);
       });
 
-      loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/models/gltf/ferrari.glb', function(gltf) {
+      loader.load(carModelUrl, function(gltf) {
         aiCar = gltf.scene;
         aiCar.scale.set(0.5, 0.5, 0.5);
-        aiCar.position.set(aiX, 0, aiZ - 10);
+        aiCar.position.set(aiX, 0, aiZ);
         aiCar.rotation.y = Math.PI;
         scene.add(aiCar);
       });
@@ -120,7 +121,6 @@
       startBtn.onclick = () => {
         if (!gameRunning) {
           gameRunning = true;
-          score = 0;
           playerZ = 0;
           aiZ = -10;
           playerX = 0;
@@ -131,7 +131,6 @@
       };
       restartBtn.onclick = () => {
         gameRunning = false;
-        score = 0;
         playerZ = 0;
         aiZ = -10;
         playerX = 0;
