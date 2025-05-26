@@ -1,24 +1,120 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <title>AI Car Racing Game</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; background: #333; color: #fff; }
-    #game { width: 100%; height: 400px; background: #222; position: relative; }
-    #car { width: 40px; height: 70px; background: red; position: absolute; bottom: 20px; left: 50%; }
-    #ai-car { width: 40px; height: 70px; background: blue; position: absolute; bottom: 20px; left: 30%; }
-    #score { font-size: 24px; margin: 10px; }
-    #controls { margin: 10px; }
-    button { padding: 10px 20px; font-size: 18px; }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #333; 
+      color: #fff; 
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+    #game { 
+      width: 100%; 
+      max-width: 600px;
+      height: 300px; 
+      background: #222; 
+      position: relative; 
+      overflow: hidden;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    #car { 
+      width: 40px; 
+      height: 70px; 
+      background: #ff4444; 
+      position: absolute; 
+      bottom: 20px; 
+      left: calc(50% - 20px);
+      border-radius: 8px;
+      transition: left 0.1s;
+    }
+    #ai-car { 
+      width: 40px; 
+      height: 70px; 
+      background: #4444ff; 
+      position: absolute; 
+      bottom: 20px; 
+      left: 30%; 
+      border-radius: 8px;
+      transition: left 0.1s;
+    }
+    #score { 
+      font-size: 24px; 
+      margin: 10px 0;
+      text-align: center;
+    }
+    #controls { 
+      display: flex; 
+      gap: 10px; 
+      margin: 15px 0;
+      justify-content: center;
+    }
+    button { 
+      padding: 10px 20px; 
+      font-size: 18px; 
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #45a049; }
+    #instructions {
+      max-width: 600px;
+      text-align: center;
+      margin: 20px 0;
+      color: #ccc;
+      font-size: 16px;
+    }
+    #mobile-controls {
+      display: none;
+      width: 100%;
+      max-width: 600px;
+      margin: 10px auto;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .mobile-btn {
+      width: 80px;
+      height: 80px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #fff;
+    }
+    @media (max-width: 600px) {
+      #mobile-controls { display: flex; }
+      #game { height: 250px; }
+    }
   </style>
 </head>
 <body>
   <h1>AI Car Racing Game</h1>
+  <div id="instructions">
+    Use LEFT/RIGHT arrow keys or tap the buttons below to move your car!
+  </div>
   <div id="score">Score: 0</div>
   <div id="game">
     <div id="car"></div>
     <div id="ai-car"></div>
+  </div>
+  <div id="mobile-controls">
+    <div class="mobile-btn" id="left-btn">←</div>
+    <div class="mobile-btn" id="right-btn">→</div>
   </div>
   <div id="controls">
     <button id="start">Start</button>
@@ -32,25 +128,48 @@
     const scoreDisplay = document.getElementById('score');
     const startBtn = document.getElementById('start');
     const restartBtn = document.getElementById('restart');
+    const leftBtn = document.getElementById('left-btn');
+    const rightBtn = document.getElementById('right-btn');
+    const gameArea = document.getElementById('game');
 
-    // Controls
+    // Set car position to center
+    car.style.left = 'calc(50% - 20px)';
+
+    // Keyboard controls
     document.addEventListener('keydown', (e) => {
       if (!gameRunning) return;
       if (e.key === 'ArrowLeft') moveCar(-10);
       if (e.key === 'ArrowRight') moveCar(10);
     });
 
+    // Touch controls for mobile
+    leftBtn.addEventListener('touchstart', () => moveCar(-10));
+    rightBtn.addEventListener('touchstart', () => moveCar(10));
+
+    // Prevent touch scrolling
+    [leftBtn, rightBtn].forEach(btn => {
+      btn.addEventListener('touchstart', (e) => e.preventDefault());
+    });
+
     function moveCar(dx) {
+      if (!gameRunning) return;
       const rect = car.getBoundingClientRect();
-      if (rect.left + dx > 0 && rect.right + dx < document.getElementById('game').offsetWidth)
-        car.style.left = (parseInt(car.style.left || '50%') + dx) + 'px';
+      const gameRect = gameArea.getBoundingClientRect();
+      const newLeft = parseInt(car.style.left) + dx;
+      if (newLeft > 0 && newLeft < gameRect.width - rect.width) {
+        car.style.left = newLeft + 'px';
+      }
     }
 
     function updateAI() {
       // Simple AI: move randomly
-      const aiPos = parseInt(aiCar.style.left || '30%');
+      const aiPos = parseInt(aiCar.style.left);
+      const gameWidth = gameArea.offsetWidth;
       const dir = Math.random() > 0.5 ? 5 : -5;
-      aiCar.style.left = (aiPos + dir) + '%';
+      const newPos = aiPos + dir;
+      if (newPos > 0 && newPos < gameWidth - 40) {
+        aiCar.style.left = newPos + 'px';
+      }
     }
 
     function gameLoop() {
@@ -61,8 +180,20 @@
       setTimeout(gameLoop, 50);
     }
 
-    startBtn.onclick = () => { gameRunning = true; gameLoop(); };
-    restartBtn.onclick = () => { gameRunning = false; score = 0; scoreDisplay.textContent = `Score: 0`; };
+    startBtn.onclick = () => { 
+      if (!gameRunning) {
+        gameRunning = true;
+        score = 0;
+        scoreDisplay.textContent = `Score: 0`;
+        gameLoop();
+      }
+    };
+    restartBtn.onclick = () => { 
+      gameRunning = false;
+      score = 0;
+      scoreDisplay.textContent = `Score: 0`;
+      car.style.left = 'calc(50% - 20px)';
+    };
   </script>
 </body>
 </html>
