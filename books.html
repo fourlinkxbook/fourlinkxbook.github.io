@@ -5,42 +5,185 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Browse Books</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-    nav { background: #f0f0f0; padding: 10px; margin-bottom: 20px; }
-    nav a { margin-right: 15px; color: #2196F3; text-decoration: none; }
-    .book { border: 1px solid #ddd; padding: 10px; margin: 10px 0; cursor: pointer; }
-    .book:hover { background: #f9f9f9; }
-    #search { width: 100%; padding: 8px; margin-bottom: 15px; }
+    :root {
+      --primary: #4CAF50;
+      --secondary: #2196F3;
+      --accent: #FFC107;
+      --light: #f8f9fa;
+      --dark: #212529;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      padding: 0.5rem;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 0 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    nav a:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    #search {
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    .book {
+      border: 1px solid #ddd;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .book:hover {
+      background: #f9f9f9;
+      transform: translateY(-2px);
+    }
+    .book h3 {
+      color: var(--secondary);
+      margin: 0 0 0.5rem 0;
+    }
+    .book p {
+      color: #666;
+      margin: 0;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      max-width: 400px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+    .modal-buttons {
+      margin-top: 1.5rem;
+    }
+    .modal-btn {
+      padding: 0.8rem 1.5rem;
+      margin: 0 0.5rem;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .modal-btn-donate {
+      background: var(--primary);
+      color: white;
+    }
+    .modal-btn-cancel {
+      background: var(--secondary);
+      color: white;
+    }
+    .modal h2 {
+      color: var(--primary);
+      margin-top: 0;
+    }
+    @media (max-width: 500px) {
+      .modal-content {
+        width: 90%;
+      }
+    }
   </style>
 </head>
 <body>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="books.html">Books</a>
-    <a href="donate.html">Support Us</a>
-  </nav>
-  <h1>Browse Books</h1>
-  <input type="text" id="search" placeholder="Search books...">
-  <div id="books">
-    <div class="book" onclick="showDonationPrompt()">
-      <h3>The Great Adventure</h3>
-      <p>Author: Jane Doe</p>
+  <header>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="books.html">Books</a>
+      <a href="donate.html">Support Us</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Browse Books</h1>
+    <input type="text" id="search" placeholder="Search books...">
+    <div id="books">
+      <div class="book" onclick="showDonationPrompt()">
+        <h3>The Great Adventure</h3>
+        <p>Author: Jane Doe</p>
+      </div>
+      <div class="book" onclick="showDonationPrompt()">
+        <h3>Science Today</h3>
+        <p>Author: John Smith</p>
+      </div>
+      <div class="book" onclick="showDonationPrompt()">
+        <h3>History Uncovered</h3>
+        <p>Author: Alice Wonder</p>
+      </div>
     </div>
-    <div class="book" onclick="showDonationPrompt()">
-      <h3>Science Today</h3>
-      <p>Author: John Smith</p>
-    </div>
-    <div class="book" onclick="showDonationPrompt()">
-      <h3>History Uncovered</h3>
-      <p>Author: Alice Wonder</p>
+  </main>
+  <div id="donationModal" class="modal">
+    <div class="modal-content">
+      <h2>Support Our Project!</h2>
+      <p>Would you like to make a donation to help bring this project to life?</p>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-donate" onclick="window.location.href='donate.html'">Donate</button>
+        <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Maybe Later</button>
+      </div>
     </div>
   </div>
   <script>
     function showDonationPrompt() {
-      if (confirm('Support our project! Would you like to make a donation to help bring it to life?')) {
-        window.location.href = 'donate.html';
-      }
+      document.getElementById('donationModal').style.display = 'flex';
     }
+    function closeModal() {
+      document.getElementById('donationModal').style.display = 'none';
+    }
+    // Simple search function (optional)
+    document.getElementById('search').addEventListener('input', function() {
+      const search = this.value.toLowerCase();
+      const books = document.querySelectorAll('.book');
+      books.forEach(book => {
+        const title = book.querySelector('h3').textContent.toLowerCase();
+        if (title.includes(search)) {
+          book.style.display = '';
+        } else {
+          book.style.display = 'none';
+        }
+      });
+    });
   </script>
 </body>
 </html>
