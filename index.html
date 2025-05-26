@@ -1,169 +1,68 @@
-
-<!DOCTYPE html>
+<!DOCTYPE html><!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Car Racing AI Game</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>AI Car Racing Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; background: #333; color: #fff; }
+    #game { width: 100%; height: 400px; background: #222; position: relative; }
+    #car { width: 40px; height: 70px; background: red; position: absolute; bottom: 20px; left: 50%; }
+    #ai-car { width: 40px; height: 70px; background: blue; position: absolute; bottom: 20px; left: 30%; }
+    #score { font-size: 24px; margin: 10px; }
+    #controls { margin: 10px; }
+    button { padding: 10px 20px; font-size: 18px; }
+  </style>
 </head>
-<style>body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #222;
-  text-align: center;
-  color: white;
-}
-
-h1 {
-  margin: 10px;
-}
-
-#gameCanvas {
-  border: 2px solid #fff;
-  display: block;
-  margin: 20px auto;
-  background-color: #333;
-}
-
-#scoreContainer {
-  font-size: 20px;
-  margin-top: 10px;
-}
-</style>
 <body>
-  <h1>Car Racing AI Game</h1>
-  <canvas id="gameCanvas"></canvas>
-  <div id="scoreContainer">
-    Score: <span id="score">0</span>
+  <h1>AI Car Racing Game</h1>
+  <div id="score">Score: 0</div>
+  <div id="game">
+    <div id="car"></div>
+    <div id="ai-car"></div>
   </div>
-  <script>const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
-const scoreSpan = document.getElementById("score");
+  <div id="controls">
+    <button id="start">Start</button>
+    <button id="restart">Restart</button>
+  </div>
+  <script>
+    let score = 0;
+    let gameRunning = false;
+    const car = document.getElementById('car');
+    const aiCar = document.getElementById('ai-car');
+    const scoreDisplay = document.getElementById('score');
+    const startBtn = document.getElementById('start');
+    const restartBtn = document.getElementById('restart');
 
-canvas.width = 400;
-canvas.height = 600;
+    // Controls
+    document.addEventListener('keydown', (e) => {
+      if (!gameRunning) return;
+      if (e.key === 'ArrowLeft') moveCar(-10);
+      if (e.key === 'ArrowRight') moveCar(10);
+    });
 
-let player = {
-    x: 180,
-    y: 520,
-    width: 40,
-    height: 70,
-    color: "blue",
-    speed: 5
-};
-
-let aiCars = [];
-let roadLines = [];
-let gameOver = false;
-let score = 0;
-
-// Handle keyboard input
-const keys = {Left: false,Right: false};
-document.addEventListener("keydown", (e) => {
-    if(e.key === "ArrowLeft") keys.Left = true;
-    if(e.key === "ArrowRight") keys.Right = true;
-});
-document.addEventListener("keyup", (e) => {
-    if(e.key === "ArrowLeft") keys.Left = false;
-    if(e.key === "ArrowRight") keys.Right = false;
-});
-
-// Create road lines
-for(let i=0; i<10; i++){
-    roadLines.push({y: i*60, x:175, width:50, height:10, color:"#fff"});
-}
-
-// Create AI cars
-function createAICar() {
-    const lanePositions = [100, 180, 260];
-    const x = lanePositions[Math.floor(Math.random() * lanePositions.length)];
-    const y = -100;
-    const speed = 3 + Math.random() * 2; // variable speed
-    return {x, y, width:40, height:70, color:"red", speed};
-}
-
-// Initialize AI cars
-for(let i=0; i<3; i++){
-    aiCars.push(createAICar());
-}
-
-// Draw functions
-function drawCar(car) {
-    ctx.fillStyle = car.color;
-    ctx.fillRect(car.x, car.y, car.width, car.height);
-}
-
-function drawRoadLines() {
-    ctx.fillStyle = "#fff";
-    for(let line of roadLines){
-        ctx.fillRect(line.x, line.y, line.width, line.height);
-    }
-}
-
-// Update functions
-function update() {
-    if(gameOver) return;
-
-    // Move player
-    if(keys.Left && player.x > 50) player.x -= player.speed;
-    if(keys.Right && player.x < canvas.width - player.width - 50) player.x += player.speed;
-
-    // Move road lines
-    for(let line of roadLines){
-        line.y += 5;
-        if(line.y > canvas.height){
-            line.y = -10;
-        }
+    function moveCar(dx) {
+      const rect = car.getBoundingClientRect();
+      if (rect.left + dx > 0 && rect.right + dx < document.getElementById('game').offsetWidth)
+        car.style.left = (parseInt(car.style.left || '50%') + dx) + 'px';
     }
 
-    // Move AI cars
-    for(let car of aiCars){
-        car.y += car.speed;
-        if(car.y > canvas.height + 10){
-            car.y = -car.height;
-            // reset position to random lane
-            const lanes = [100, 180, 260];
-            car.x = lanes[Math.floor(Math.random() * lanes.length)];
-            car.speed = 3 + Math.random() * 2;
-        }
-        // Check collision with player
-        if(
-            player.x < car.x + car.width &&
-            player.x + player.width > car.x &&
-            player.y < car.y + car.height &&
-            player.y + player.height > car.y
-        ){
-            gameOver = true;
-            alert("Game Over! Your Score: " + score);
-        }
+    function updateAI() {
+      // Simple AI: move randomly
+      const aiPos = parseInt(aiCar.style.left || '30%');
+      const dir = Math.random() > 0.5 ? 5 : -5;
+      aiCar.style.left = (aiPos + dir) + '%';
     }
 
-    // Update score
-    score++;
-    scoreSpan.innerText = score;
-}
-
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawRoadLines();
-    drawCar(player);
-    for(let car of aiCars){
-        drawCar(car);
+    function gameLoop() {
+      if (!gameRunning) return;
+      updateAI();
+      score++;
+      scoreDisplay.textContent = `Score: ${score}`;
+      setTimeout(gameLoop, 50);
     }
-}
 
-// Main game loop
-function gameLoop() {
-    update();
-    draw();
-    if(!gameOver){
-        requestAnimationFrame(gameLoop);
-    }
-}
-
-// Start game
-gameLoop();
-</script>
+    startBtn.onclick = () => { gameRunning = true; gameLoop(); };
+    restartBtn.onclick = () => { gameRunning = false; score = 0; scoreDisplay.textContent = `Score: 0`; };
+  </script>
 </body>
 </html>
